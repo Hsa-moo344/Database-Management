@@ -1,0 +1,674 @@
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.Main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e5edf7;
+}
+.Main h2 {
+  padding-top: 30px;
+  color: #0c81c8;
+}
+.Main input {
+  border: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  width: 250px;
+  font-size: 16px;
+}
+
+.Main label {
+  font-weight: bold;
+  align-self: flex;
+  margin-left: 8px;
+}
+
+.Main button {
+  background-color: #a9abac;
+  color: white;
+  padding: 15px 20px;
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.MianCont {
+  font-size: 20px;
+  font-weight: 600;
+  padding-bottom: 30px;
+}
+/* App js */
+.AppMain {
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+/* Navbar js */
+.navContainer {
+  display: flex;
+  justify-content: space-between;
+  padding: 25px;
+  margin-top: 20px;
+  text-decoration: none;
+  background-color: #ebf5fb;
+  margin-bottom: 50px;
+}
+.navSubContainer {
+  margin-top: 40px;
+}
+
+/* home page */
+.MainPage {
+  color: Blue;
+}
+.Dropdown {
+  position: absolute;
+  display: inline-block;
+}
+.Dropdown button {
+  padding: 12px 18px;
+}
+.dropbtl {
+  background-color: #608af5;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+}
+
+.BtlContent {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.BtlContent a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.BtlContent a:hover {
+  background-color: #ddd;
+}
+
+.Dropdown:hover .BtlContent {
+  display: block;
+}
+
+.Dropdown:hover .dropbtl {
+  background-color: #3e8e41;
+}
+
+.navBtl {
+  /* display: flex;
+  padding: 10px 20px; */
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px;
+  justify-content: space-between;
+}
+.addButton {
+  border-radius: 15px;
+  background-color: #9fb7f4;
+  color: #575555;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.addButton:hover {
+  background-color: #3e8e41;
+}
+
+/* Attendance page */
+.MainAttendance {
+  text-align: center;
+  padding: 0px;
+  margin: 0px;
+}
+.Attend {
+  display: block;
+  margin: auto;
+}
+.MainAttendance {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: #f2f8ff;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.Attend {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.Attend label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+}
+
+.Attend input,
+.Attend select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.submitBtn {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: #0077cc;
+}
+
+@media (max-width: 480px) {
+  .MainAttendance {
+    padding: 1rem;
+  }
+
+  .Attend input,
+  .Attend select {
+    font-size: 14px;
+  }
+}
+.Card {
+  border: 1px solid #eaecee;
+}
+.Card tr,
+th {
+  border: 1px solid #eaecee;
+}
+.editAttendance {
+  background-color: #4caf50; /* green */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.editAttendance:hover {
+  background-color: #45a049;
+}
+
+.deleteAttendance {
+  background-color: #f44336; /* red */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.deleteAttendance:hover {
+  background-color: #d32f2f;
+}
+
+/* Individual page */
+.CardIndividual {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+.CardIndividual:hover {
+  transform: translateY(-3px);
+}
+
+.CardIndividual thead {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.CardIndividual th,
+.CardIndividual td {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.CardIndividual th {
+  background-color: #f7fafc;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.CardIndividual td p {
+  margin: 0;
+  color: #4a5568;
+}
+
+.editIndividual,
+.deleteIndividual {
+  margin-right: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.editIndividual {
+  background-color: #3182ce;
+  color: white;
+}
+
+.editIndividual:hover {
+  background-color: #2b6cb0;
+}
+
+.deleteIndividual {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.deleteIndividual:hover {
+  background-color: #c53030;
+}
+
+/* Profile Page */
+.profileMain {
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.profileMain h2,
+p {
+  margin-top: 10px;
+  text-align: left;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1 1 200px;
+  max-width: 300px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 5px 8px 30px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none;
+}
+
+.dropdown {
+  padding: 10px 5px 10px 36px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.staffCard {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  max-width: 400px;
+  background-color: #fdfdfd;
+}
+
+.profileImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.tags {
+  margin: 8px 0;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #eee;
+  padding: 4px 8px;
+  margin-right: 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.staffGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(250px, 1fr)
+  ); /* 4 columns if space allows */
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.staffCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Staff Profile Detail page */
+.ProfileDetailBtn {
+  margin-bottom: 20px;
+  float: flex;
+  padding: 10px 15px 10px;
+  background-color: green;
+  border: none;
+  color: white;
+  font-size: 16px;
+  margin-left: 600px;
+}
+
+/* Staff Database */
+.profileMain {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.MainAttendance {
+  max-width: 700px;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #333;
+  text-align: center;
+}
+
+.staffdatabseFrm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #444;
+}
+
+input[type="text"],
+input[type="date"],
+select {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: border 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+select:focus {
+  border-color: #007bff;
+  outline: none;
+  background-color: #fff;
+}
+
+.submitBtn {
+  background-color: #007bff;
+  color: white;
+  padding: 0.8rem;
+  border: none;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: 1.5rem;
+}
+
+.submitBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Edit and Delete */
+.staffGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.staffCard {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f9f9f9;
+}
+
+.profileImage {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.editBtn,
+.deleteBtn {
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.editBtn {
+  background-color: #007bff;
+  color: white;
+}
+
+.deleteBtn {
+  background-color: #dc3545;
+  color: white;
+}
+/* payroll form */
+/* Container around the table for responsive scrolling */
+.tableContainer {
+  margin-top: 20px;
+  overflow-x: auto; /* Horizontal scroll on small screens */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+/* Table styling */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.table thead {
+  background-color: #007bff;
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Alternate row background color for readability */
+.table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect on table rows */
+.table tbody tr:hover {
+  background-color: #e9f1ff;
+}
+
+/* Edit button styling */
+.editPayroll {
+  background-color: #ffc107;
+  border: none;
+  color: #333;
+  padding: 6px 12px;
+  margin-right: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.editPayroll:hover {
+  background-color: #e0a800;
+}
+
+/* Delete button styling */
+.deletePayroll {
+  background-color: #dc3545;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.deletePayroll:hover {
+  background-color: #b02a37;
+}
+
+/* Submit button styling (also used for Download PDF) */
+.submitBtn {
+  background-color: #28a745; /* Green */
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.submitBtn:hover {
+  background-color: #218838;
+}
+
+/* Pagination buttons */
+.pageBtn {
+  background-color: #007bff;
+  color: black;
+  border: none;
+  padding: 8px 14px;
+  margin: 0 4px 10px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pageBtn:disabled {
+  background-color: #6c757d; /* Gray for disabled */
+  cursor: default;
+}
