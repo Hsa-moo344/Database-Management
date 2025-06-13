@@ -55,16 +55,32 @@ body {
 }
 /* Navbar js */
 .navContainer {
-  display: flex;
-  justify-content: space-between;
   padding: 25px;
-  margin-top: 20px;
+  margin-top: 0px;
   text-decoration: none;
-  background-color: #ebf5fb;
+  background-color: #292975;
   margin-bottom: 50px;
 }
-.navSubContainer {
-  margin-top: 40px;
+
+.navItems {
+  text-decoration: none;
+  color: rgb(255, 255, 255);
+  border-radius: 18px;
+  padding: 40px;
+  margin: 0;
+}
+.navItems:hover {
+  font-size: 20px;
+}
+/* Image Navbar */
+.ImageNav {
+  width: 90px;
+  height: auto;
+  color: white;
+}
+.navContainer img {
+  background-color: transparent;
+  border-radius: 20px;
 }
 
 /* home page */
@@ -141,9 +157,13 @@ body {
 
 /* Attendance page */
 .MainAttendance {
-  text-align: center;
-  padding: 0px;
-  margin: 0px;
+  padding: 1rem;
+  margin: 2rem auto;
+  max-width: 100%;
+  overflow-x: auto;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .Attend {
   display: block;
@@ -239,6 +259,132 @@ th {
 
 .deleteAttendance:hover {
   background-color: #d32f2f;
+}
+
+/* Attendance Record dislay list */
+.AttendanceContainer {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.TbnRecord {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.TblDisplayForm {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.FormTbl {
+  background-color: #f1f5f9;
+  color: #333;
+}
+
+.FromContainer {
+  border: 1px solid #e2e8f0;
+  padding: 12px 10px;
+  font-size: 14px;
+  text-align: center;
+  vertical-align: middle;
+}
+.FromBtnContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.EditBtn {
+  background-color: #4caf50;
+  color: white;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.EditBtn:hover {
+  background-color: #2563eb;
+}
+
+.DeleteBtn {
+  background-color: #f44336;
+  color: white;
+  padding: 6px 12px;
+  margin-left: 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.DeleteBtn:hover {
+  background-color: #dc2626;
+}
+
+/* Downlaod Pdf from attenance */
+.downloadPDF {
+  margin-top: 1rem;
+  padding: 10px 15px 10px;
+  background-color: #1d4ed8;
+  color: white;
+  font-size: 13px;
+  font-weight: 100;
+  border: none;
+  border-radius: 0.5rem; /* rounded-md */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: block;
+  margin: auto;
+  margin-right: auto; /* center align */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.downloadPDF:hover {
+  background-color: #2563eb;
+}
+/* Download pdf pagination */
+.Attendancepagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pageBtn {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  color: #333;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pageBtn:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
+.activePage {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  font-weight: bold;
 }
 
 /* Individual page */
@@ -561,14 +707,112 @@ select:focus {
   color: white;
 }
 /* payroll form */
-/* Container around the table for responsive scrolling */
 .tableContainer {
-  margin-top: 20px;
-  overflow-x: auto; /* Horizontal scroll on small screens */
+  padding: 1rem;
+  margin: 2rem auto;
+  max-width: 100%;
+  overflow-x: auto;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.95rem;
+  background-color: #fff;
+  table-layout: auto; /* Allows dynamic sizing */
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
   border: 1px solid #ddd;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table th {
+  background-color: #16a085;
+  color: #fff;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f4fdfc;
+}
+
+.table tbody tr:hover {
+  background-color: #e8f6f3;
+}
+
+/* Specific column widths for better space distribution */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  min-width: 160px; /* Full Name column */
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  min-width: 120px; /* Staff Code */
+}
+
+.table th:last-child,
+.table td:last-child {
+  min-width: 140px; /* Actions column */
+}
+
+/* Buttons */
+.editPayroll {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 6px;
   border-radius: 6px;
-  padding: 10px;
-  background-color: #fafafa;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.editPayroll:hover {
+  background-color: #2980b9;
+}
+
+.deletePayroll {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.deletePayroll:hover {
+  background-color: #c0392b;
+}
+
+.submitBtn {
+  display: block;
+  margin: 24px auto 0; /* space from table, center align */
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #2ecc71;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.submitBtn:hover {
+  background-color: #27ae60;
+  transform: scale(1.03);
 }
 
 /* Table styling */
@@ -671,4 +915,147 @@ select:focus {
 .pageBtn:disabled {
   background-color: #6c757d; /* Gray for disabled */
   cursor: default;
+}
+
+/* Staff Profile Detail Form */
+.MainProfileDetail {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  max-width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.MainProfileDetail img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 16px;
+}
+
+.AddressMTC {
+  font-style: normal;
+  font-size: 12px;
+  color: #333;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.AddressMTC a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.AddressMTC a:hover {
+  text-decoration: underline;
+}
+
+.formProfileDetail {
+  width: 100%;
+  height: auto;
+  padding: 0px;
+  margin: 0px;
+}
+/* Qualification and Education */
+.TblEducation {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.TblEducation h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.TblEducation table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+}
+
+.TblEducation th,
+.TblEducation td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.TblEducation th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+  color: #374151;
+}
+
+.TblEducation td input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.TblEducation td input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+/* Marital Status */
+.maritalProfile {
+  background-color: #f9f9f9;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.maritalProfile h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.maritalProfile table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.maritalProfile th,
+.maritalProfile td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+.maritalProfile th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.maritalProfile input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.maritalProfile input[type="text"]:focus {
+  border-color: #007bff;
+  outline: none;
 }

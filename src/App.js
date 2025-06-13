@@ -37,13 +37,16 @@ function App() {
           element={<Login setIsLoggedIn={setIsLoggedIn} />}
         />
         <Route
-          path="/home"
+          path="/login"
           element={isLoggedIn ? <Home /> : <Navigate to="/login" />}
         />
-        <Route
-          path="/dashboard"
-          element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
-        />
+        {/* <Route
+          path="/home"
+          element={isLoggedIn ? <Home /> : <Navigate to="/home" />}
+        /> */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
 

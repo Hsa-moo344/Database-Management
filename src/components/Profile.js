@@ -80,7 +80,7 @@ export default function Profile() {
           }}
           className={ProfileCss.dropdown}
         >
-          <option>All</option>
+          <option>Departments</option>
           <option>Finance</option>
           <option>HR</option>
           <option>Adult OPD</option>

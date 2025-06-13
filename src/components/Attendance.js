@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ProfileCss from "../css/staff.module.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-// Declare this early to avoid use-before-declaration
 const initialForm = {
   name: "",
   gender: "",
   position: "",
   department: "",
-  email: "",
+  // email: "",
   type: "",
   date: "",
   timeIn: "",
@@ -24,6 +25,9 @@ function Attendance() {
   const [formData, setFormData] = useState(initialForm);
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const getLastDayOfMonth = (date) => {
     const d = new Date(date);
@@ -34,7 +38,6 @@ function Attendance() {
     const { name, value } = e.target;
     const updatedFormData = { ...formData, [name]: value };
 
-    // Calculate working hours
     if (
       (name === "timeIn" || name === "timeOut") &&
       updatedFormData.timeIn &&
@@ -46,6 +49,7 @@ function Attendance() {
       const [endHour, endMinute] = updatedFormData.timeOut
         .split(":")
         .map(Number);
+
       const start = new Date();
       const end = new Date();
       start.setHours(startHour, startMinute, 0);
@@ -53,26 +57,28 @@ function Attendance() {
 
       let diff = end - start;
       if (diff < 0) {
-        end.setDate(end.getDate() + 1); // Overnight shift
+        end.setDate(end.getDate() + 1); // Crossed midnight
         diff = end - start;
       }
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
       updatedFormData.workingHours = `${hours
         .toString()
         .padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
     }
 
-    // Calculate leave days
     if (name === "startLeaveDay" || name === "endLeaveDay") {
       const start = new Date(updatedFormData.startLeaveDay);
       const end = new Date(updatedFormData.endLeaveDay);
+
       if (!isNaN(start) && !isNaN(end) && end >= start) {
-        const lastDay = getLastDayOfMonth(start);
-        const countUntil = end > lastDay ? lastDay : end;
-        const diffDays =
-          Math.ceil((countUntil - start) / (1000 * 60 * 60 * 24)) + 1;
+        const lastDayOfStartMonth = getLastDayOfMonth(start);
+        const lastCountDay =
+          end > lastDayOfStartMonth ? lastDayOfStartMonth : end;
+        const dayInMs = 1000 * 60 * 60 * 24;
+        const diffDays = Math.ceil((lastCountDay - start) / dayInMs) + 1;
         updatedFormData.totalLeaveDaysThisMonth = diffDays;
       } else {
         updatedFormData.totalLeaveDaysThisMonth = 0;
@@ -84,7 +90,6 @@ function Attendance() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const response = await fetch("http://localhost:8000/attendancefunction", {
         method: "POST",
@@ -120,7 +125,7 @@ function Attendance() {
     }
   };
 
-  const UpdateFunction = () => {
+  const UpdatedFunction = () => {
     if (!editId) {
       alert("No item selected for update");
       return;
@@ -158,6 +163,88 @@ function Attendance() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const filteredData = data.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.position.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const displayedData = filteredData?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const downloadPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("Mae Tao Clinic - Staff Timesheet Report", 14, 15);
+
+    const tableColumn = ["Number", ...Object.keys(initialForm)];
+    const tableRows = filteredData.map((row, index) => [
+      index + 1,
+      ...Object.keys(initialForm).map((key) => {
+        const value = row[key] || "";
+        // Check if the value is a date string
+        if (typeof value === "string" && value.includes("T")) {
+          return value.split("T")[0]; // Only return the date part
+        }
+        return value;
+      }),
+    ]);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: {
+        fillColor: [128, 128, 128],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.5,
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2,
+        overflow: "linebreak",
+        columnWidth: "wrap", // Required when using columnStyles
+      },
+      columnStyles: {
+        // Apply fixed width for the first column (number column)
+        0: { cellWidth: 10 },
+        ...Object.keys(initialForm).reduce((acc, key, i) => {
+          acc[i + 1] = {
+            cellWidth: key === "name" || key === "department" ? 25 : 18,
+          };
+          return acc;
+        }, {}),
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      didDrawPage: function (data) {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(
+          `Page ${
+            doc.internal.getCurrentPageInfo().pageNumber
+          } of ${pageCount}`,
+          doc.internal.pageSize.getWidth() - 40,
+          doc.internal.pageSize.getHeight() - 10
+        );
+      },
+    });
+
+    doc.save("Timesheet_report.pdf");
+  };
 
   return (
     <div className={ProfileCss.MainAttendance}>
@@ -282,7 +369,7 @@ function Attendance() {
           <input
             type="date"
             name="date"
-            value={formData.date}
+            value={formData.date?.slice(0, 10)}
             onChange={handleChange}
             required
           />
@@ -325,7 +412,7 @@ function Attendance() {
           <input
             type="date"
             name="startLeaveDay"
-            value={formData.startLeaveDay}
+            value={formData.startLeaveDay?.slice(0, 10)}
             onChange={handleChange}
           />
         </label>
@@ -335,7 +422,7 @@ function Attendance() {
           <input
             type="date"
             name="endLeaveDay"
-            value={formData.endLeaveDay}
+            value={formData.endLeaveDay?.slice(0, 10)}
             onChange={handleChange}
           />
         </label>
@@ -363,72 +450,148 @@ function Attendance() {
         <button type="submit" className={ProfileCss.submitBtn}>
           Submit
         </button>
+
         <button
           type="button"
           className={ProfileCss.submitBtn}
-          onClick={UpdateFunction}
+          onClick={UpdatedFunction}
         >
           Update
         </button>
       </form>
+      {/* Staff Attendance Record display */}
+      <h3 style={{ textAlign: "center" }}>Staff Attendance Records List</h3>
+      <div className={ProfileCss.AttendanceContainer}>
+        <input
+          type="text"
+          placeholder="Search by name, department or position"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={ProfileCss.TbnRecord}
+        />
 
-      <h3>Staff Attendance Records List</h3>
-      {data.map((attendance) => (
-        <div key={attendance.id} className={ProfileCss.Card}>
-          <thead>
-            <tr>
-              <th>Name:</th>
-              <th>Gender:</th>
-              <th>Position:</th>
-              <th>Type:</th>
-              <th>Date:</th>
-              <th>Time In:</th>
-              <th>Time Out:</th>
-              <th>Working Hours:</th>
-            </tr>
-            <tr>
-              <td>
-                <p> {attendance.name}</p>
-              </td>
-              <td>
-                <p> {attendance.gender}</p>
-              </td>
-              <td>
-                <p> {attendance.position}</p>
-              </td>
+        {displayedData.length > 0 ? (
+          <table className={ProfileCss.TblDisplayForm}>
+            <thead className={ProfileCss.FormTbl}>
+              <tr>
+                <th
+                  className={ProfileCss.FromContainer}
+                  style={{ minWidth: "100px" }}
+                >
+                  Name
+                </th>
+                <th className={ProfileCss.FromContainer}>Gender</th>
+                <th className={ProfileCss.FromContainer}>Position</th>
+                <th className={ProfileCss.FromContainer}>Department</th>
+                <th className={ProfileCss.FromContainer}>Type</th>
+                <th className={ProfileCss.FromContainer}>Date</th>
+                <th className={ProfileCss.FromContainer}>Time In</th>
+                <th className={ProfileCss.FromContainer}>Time Out</th>
+                <th className={ProfileCss.FromContainer}>Working Hours</th>
+                <th className={ProfileCss.FromContainer}>Start Leave Day</th>
+                <th className={ProfileCss.FromContainer}>End Leave Day</th>
+                <th className={ProfileCss.FromContainer}>Total Leave Day</th>
+                <th className={ProfileCss.FromContainer}>Approved By</th>
+                <th className={ProfileCss.FromContainer}>Actions</th>
+              </tr>
+            </thead>
 
-              <td>
-                <p> {attendance.type}</p>
-              </td>
-              <td>
-                <p> {attendance.date}</p>
-              </td>
-              <td>
-                <p> {attendance.timeIn}</p>
-              </td>
-              <td>
-                <p> {attendance.timeOut}</p>
-              </td>
-              <td>
-                <p> {attendance.workingHours}</p>
-              </td>
-            </tr>
-          </thead>
+            <tbody>
+              {filteredData.map((attendance) => (
+                <tr key={attendance.id}>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.name}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.gender}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.position}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.department}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.type}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.date?.slice(0, 10)}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.timeIn}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.timeOut}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.workingHours}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.startLeaveDay
+                      ? attendance.startLeaveDay?.slice(0, 10)
+                      : ""}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.endLeaveDay
+                      ? attendance.endLeaveDay?.slice(0, 10)
+                      : ""}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.totalLeaveDaysThisMonth}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.approvedBy}
+                  </td>
+                  <td className={ProfileCss.FromBtnContainer}>
+                    <button
+                      className={ProfileCss.EditBtn}
+                      onClick={() => editFunction(attendance.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={ProfileCss.DeleteBtn}
+                      onClick={() => deleteFunction(attendance.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
 
-          <button
-            className={ProfileCss.editAttendance}
-            onClick={() => editFunction(attendance.id)}
-          >
-            Edit
-          </button>
-          <button
-            className={ProfileCss.deleteAttendance}
-            onClick={() => deleteFunction(attendance.id)}
-          >
-            Delete
-          </button>
+            <tfoot>
+              <tr>
+                <td colSpan="10">
+                  <button
+                    onClick={downloadPDF}
+                    className={ProfileCss.downloadPDF}
+                  >
+                    Download PDF
+                  </button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        ) : (
+          <p>No attendance records to display.</p>
+        )}
+      </div>
+      {totalPages > 1 && (
+        <div className={ProfileCss.Attendancepagination}>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`${ProfileCss.pageBtn} ${
+                currentPage === index + 1 ? ProfileCss.activePage : ""
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

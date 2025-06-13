@@ -39,12 +39,8 @@ function Individual() {
       updatedFormData.timeIn &&
       updatedFormData.timeOut
     ) {
-      const [startHour, startMinute] = updatedFormData.timeIn
-        .split(":")
-        .map(Number);
-      const [endHour, endMinute] = updatedFormData.timeOut
-        .split(":")
-        .map(Number);
+      const [startHour, startMinute] = updatedFormData.timeIn.split("T")[0];
+      const [endHour, endMinute] = updatedFormData.timeOut.split("T")[0];
 
       const start = new Date();
       const end = new Date();
@@ -411,7 +407,7 @@ function Individual() {
                 <p> {individual.type}</p>
               </td>
               <td>
-                <p> {individual.date}</p>
+                <p> {individual.date.slice(0, 10)}</p>
               </td>
               <td>
                 <p> {individual.timeIn}</p>

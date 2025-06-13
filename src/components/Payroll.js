@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ProfileCss from "../css/staff.module.css";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const PayRollForm = {
   staffCode: "",
   fullName: "",
+  banding: "",
   salaryYear: "",
   payMonth: "",
   workingDays: "",
@@ -27,7 +28,6 @@ function Payroll() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Handle input change and calculate netSalary when grossSalary or deductions change
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedData = { ...PayRollData, [name]: value };
@@ -38,13 +38,12 @@ function Payroll() {
       parseFloat(name === "deductions" ? value : updatedData.deductions) || 0;
 
     if (name === "grossSalary" || name === "deductions") {
-      updatedData.netSalary = (grossSalary - deductions).toFixed(2); // Fixed to 2 decimals
+      updatedData.netSalary = (grossSalary - deductions).toFixed(2);
     }
 
     setPayRollData(updatedData);
   };
 
-  // Fetch data from backend
   const fetchData = () => {
     axios
       .get("http://localhost:8000/payrollfunction")
@@ -56,17 +55,13 @@ function Payroll() {
     fetchData();
   }, []);
 
-  // Submit new payroll data
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Exclude grossSalary and netSalary because they are calculated values
-      const { grossSalary, netSalary, ...submitData } = PayRollData;
-
       const response = await fetch("http://localhost:8000/payrollfunction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(PayRollData),
       });
 
       if (response.ok) {
@@ -83,7 +78,6 @@ function Payroll() {
     }
   };
 
-  // Load data into form for editing
   const editFunction = (id) => {
     const payrollItem = data.find((item) => item.id === id);
     if (payrollItem) {
@@ -92,17 +86,14 @@ function Payroll() {
     }
   };
 
-  // Update existing payroll data
   const UpdateFunction = () => {
     if (!editId) {
       alert("No item selected for update");
       return;
     }
 
-    const { grossSalary, netSalary, ...submitData } = PayRollData;
-
     axios
-      .put(`http://localhost:8000/payrollfunction/${editId}`, submitData)
+      .put(`http://localhost:8000/payrollfunction/${editId}`, PayRollData)
       .then(() => {
         alert("Updated successfully");
         fetchData();
@@ -115,7 +106,6 @@ function Payroll() {
       });
   };
 
-  // Delete payroll record
   const deleteFunction = (id) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       axios
@@ -131,7 +121,6 @@ function Payroll() {
     }
   };
 
-  // Search filter
   const filteredData = data.filter(
     (item) =>
       item.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,44 +132,66 @@ function Payroll() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // Export table data to PDF
+  // Donwload PDF version
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Payroll Report", 14, 10);
+    const doc = new jsPDF({ orientation: "landscape" });
 
+    // Add custom header
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("Mae Tao Clinic - Payroll Report", 14, 15);
+
+    // Prepare table headers (add "Number" as the first column)
     const tableColumn = [
-      "Staff Code",
-      "Full Name",
-      "Salary Year",
-      "Pay Month",
-      "Working Days",
-      "Leave Days",
-      "Total Hours",
-      "Hourly Rate",
-      "Gross Salary",
-      "Deductions",
-      "Net Salary",
-      "Payment Status",
+      "Number",
+      ...Object.keys(PayRollForm).map((key) =>
+        key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())
+      ),
     ];
 
-    const tableRows = data.map((row) => [
-      row.staffCode,
-      row.fullName,
-      row.salaryYear,
-      row.payMonth,
-      row.workingDays,
-      row.leaveDays,
-      row.totalHours,
-      row.hourlyRate,
-      row.grossSalary,
-      row.deductions,
-      row.netSalary,
-      row.paymentStatus,
+    // Prepare table rows with numbering
+    const tableRows = filteredData.map((row, index) => [
+      index + 1, // Row number
+      ...Object.keys(PayRollForm).map((key) => row[key]),
     ]);
 
-    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
-    doc.save("payroll_report.pdf");
+    autoTable(doc, {
+      startY: 25,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: {
+        fillColor: [128, 128, 128], // Gray header
+        textColor: [255, 255, 255], // White text
+        fontStyle: "bold",
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.5,
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2,
+        overflow: "linebreak",
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245], // Light gray for alternate rows
+      },
+      didDrawPage: function (data) {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(
+          `Page ${
+            doc.internal.getCurrentPageInfo().pageNumber
+          } of ${pageCount}`,
+          doc.internal.pageSize.getWidth() - 40,
+          doc.internal.pageSize.getHeight() - 10
+        );
+      },
+    });
+
+    doc.save("payroll_report_landscape.pdf");
   };
 
   return (
@@ -193,7 +204,7 @@ function Payroll() {
         value={searchTerm}
         onChange={(e) => {
           setSearchTerm(e.target.value);
-          setCurrentPage(1); // Reset page when searching
+          setCurrentPage(1);
         }}
         className={ProfileCss.searchBox}
       />
@@ -215,7 +226,7 @@ function Payroll() {
                 <option value="">
                   Select {key === "payMonth" ? "Month" : "Status"}
                 </option>
-                {key === "payMonth"
+                {(key === "payMonth"
                   ? [
                       "January",
                       "February",
@@ -229,17 +240,39 @@ function Payroll() {
                       "October",
                       "November",
                       "December",
-                    ].map((month) => (
-                      <option key={month} value={month}>
-                        {month}
-                      </option>
-                    ))
-                  : ["Pending", "Paid"].map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
+                    ]
+                  : ["Pending", "Paid"]
+                ).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
+            ) : key === "banding" ? (
+              <>
+                <input
+                  type="text"
+                  list="BandingOpt"
+                  name="banding"
+                  value={PayRollData.banding}
+                  onChange={handleChange}
+                  required
+                />
+                <datalist id="BandingOpt">
+                  <option value="Band 1" />
+                  <option value="Band 2" />
+                  <option value="Band 4" />
+                  <option value="Band 5" />
+                  <option value="Band 6" />
+                  <option value="Band 7" />
+                  <option value="Band 8" />
+                  <option value="Band 9" />
+                  <option value="Band 10" />
+                  <option value="Band 11" />
+                  <option value="Band 12" />
+                  <option value="Band 13" />
+                </datalist>
+              </>
             ) : (
               <input
                 type={
@@ -254,9 +287,9 @@ function Payroll() {
                 name={key}
                 value={PayRollData[key]}
                 onChange={handleChange}
-                required={key !== "deductions"} // deductions can be empty
-                step="any" // allows decimals
-                min={key === "deductions" ? 0 : undefined} // deductions min 0
+                required={key !== "deductions"}
+                step="any"
+                min={key === "deductions" ? 0 : undefined}
               />
             )}
           </label>
@@ -328,7 +361,6 @@ function Payroll() {
         </button>
       </div>
 
-      {/* Pagination buttons */}
       {totalPages > 1 && (
         <div className={ProfileCss.pagination}>
           {Array.from({ length: totalPages }, (_, index) => (
