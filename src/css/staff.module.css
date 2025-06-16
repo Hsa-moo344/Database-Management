@@ -1432,63 +1432,72 @@ h1 {
 }
 
 /* Main Dashbaord Page */
-.DashboardMainGroup {
+.DahsboardBar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 20px;
-  justify-content: center;
-  font-family: "Segoe UI", sans-serif;
+  min-height: 100vh;
 }
 
-.SubDashboard {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.SubDahsboardBar {
   width: 250px;
-  transition: all 0.3s ease;
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-right: 1px solid #ccc;
 }
 
-.BtnGroup button {
-  width: 100%;
-  background-color: #0d6efd;
+.GrpNav {
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px;
+  background-color: #ddd;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.DeptDash {
+  cursor: pointer;
+  padding: 6px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.DeptDash:hover {
+  background-color: #e8f0fe;
+}
+
+.ActiveDept {
+  background-color: #d0e8ff;
+  font-weight: bold;
+}
+
+.DashBtn {
+  margin-top: 20px;
+  padding: 8px 12px;
+  background-color: #1976d2;
   color: white;
   border: none;
-  padding: 12px 15px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 12px 12px 0 0;
+  border-radius: 4px;
   cursor: pointer;
+}
+
+.DashBtn:hover {
+  background-color: #0d47a1;
+}
+
+.MainAttendance {
+  flex: 1;
+  padding: 20px;
+}
+
+.AttendanceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.AttendanceTable th,
+.AttendanceTable td {
+  border: 1px solid #ccc;
+  padding: 8px;
   text-align: left;
-}
-
-.BtnGroup button:hover {
-  background-color: #0a58ca;
-}
-
-.BtnGroup div {
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background-color: #f8f9fa;
-}
-
-.BtnGroup a {
-  display: block;
-  padding: 8px 10px;
-  margin: 5px 0;
-  text-decoration: none;
-  background-color: #e9ecef;
-  color: #333;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-
-.BtnGroup a:hover {
-  background-color: #dbeafe;
-}
-
-/* Optional icon style */
-.BtnGroup a::before {
-  content: "🏥 ";
-  margin-right: 5px;
 }

@@ -67,6 +67,7 @@ function formatDate(input) {
 app.post("/attendancefunction", (req, res) => {
   const {
     name,
+    staffCode,
     gender,
     position,
     department,
@@ -84,7 +85,7 @@ app.post("/attendancefunction", (req, res) => {
 
   const sql = `
     INSERT INTO tbl_attendance (
-      name, gender, position, department, email, type, date,
+      name, staffCode, gender, position, department, email, type, date,
       timeIn, timeOut, workingHours,
       startLeaveDay, endLeaveDay, totalLeaveDaysThisMonth, approvedBy
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -94,6 +95,7 @@ app.post("/attendancefunction", (req, res) => {
     sql,
     [
       name,
+      staffCode,
       gender,
       position,
       department,
@@ -126,6 +128,7 @@ app.put("/attendancefunction/:id", (req, res) => {
   const id = req.params.id;
   const {
     name,
+    staffCode,
     gender,
     position,
     department,
@@ -143,7 +146,7 @@ app.put("/attendancefunction/:id", (req, res) => {
 
   const sql = `
     UPDATE tbl_attendance SET
-      name=?, gender=?, position=?, department=?, email=?, type=?, date=?,
+      name=?, staffCode=?, gender=?, position=?, department=?, email=?, type=?, date=?,
       timeIn=?, timeOut=?, workingHours=?, startLeaveDay=?, endLeaveDay=?,
       totalLeaveDaysThisMonth=?, approvedBy=?
     WHERE id=?
@@ -153,6 +156,7 @@ app.put("/attendancefunction/:id", (req, res) => {
     sql,
     [
       name,
+      staffCode,
       gender,
       position,
       department,
@@ -206,6 +210,7 @@ app.get("/api/attendancefunction", (req, res) => {
   const query = `
     SELECT 
       name,
+      staffCode,
       gender,
       position,
       department,
@@ -832,6 +837,35 @@ app.get("/api/department-count", (req, res) => {
 //     }
 //   );
 // });
+
+// Exmaple of About
+app.get("/api/about", async (req, res) => {
+  const { month = "", department = "" } = req.query;
+
+  const query = `
+    SELECT 
+  s.staffCode,
+  s.fullName,
+  p.banding,
+  s.gender,
+  s.position,
+  s.department
+FROM tbl_staff s
+LEFT JOIN tbl_payroll p ON s.staffCode = p.staffCode
+LEFT JOIN tbl_attendance a ON s.staffCode = a.staffCode
+GROUP BY s.staffCode;
+  `;
+
+  pool.query(query, (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        error: "Database error",
+        details: err,
+      });
+    }
+    res.json(result);
+  });
+});
 
 //  Start Server
 const PORT = 8000;

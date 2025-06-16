@@ -6,6 +6,7 @@ import autoTable from "jspdf-autotable";
 
 const initialForm = {
   name: "",
+  staffCode: "",
   gender: "",
   position: "",
   department: "",
@@ -223,7 +224,7 @@ function Attendance() {
 
         ...Object.keys(initialForm).reduce((acc, key, i) => {
           acc[i + 1] = {
-            cellWidth: ["name", "department", "number"].includes(key) ? 30 : 18,
+            cellWidth: ["name", "department"].includes(key) ? 23 : 18,
           };
           return acc;
         }, {}),
@@ -258,6 +259,17 @@ function Attendance() {
             type="text"
             name="name"
             value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          Staff Code:
+          <input
+            type="text"
+            name="staffCode"
+            value={formData.staffCode}
             onChange={handleChange}
             required
           />
@@ -482,6 +494,7 @@ function Attendance() {
                 >
                   Name
                 </th>
+                <th className={ProfileCss.FromContainer}>Staff Code</th>
                 <th className={ProfileCss.FromContainer}>Gender</th>
                 <th className={ProfileCss.FromContainer}>Position</th>
                 <th className={ProfileCss.FromContainer}>Department</th>
@@ -503,6 +516,9 @@ function Attendance() {
                 <tr key={attendance.id}>
                   <td className={ProfileCss.FromContainer}>
                     {attendance.name}
+                  </td>
+                  <td className={ProfileCss.FromContainer}>
+                    {attendance.staffCode}
                   </td>
                   <td className={ProfileCss.FromContainer}>
                     {attendance.gender}
