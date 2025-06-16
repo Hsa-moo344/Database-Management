@@ -343,13 +343,15 @@ function StaffDatabase() {
           />
         </label>
 
-        <div style={{ marginTop: "10px" }}>
-          <button type="submit">{editingId ? "Update Staff" : "Submit"}</button>
+        <div className={ProfileCss.ButtonGroup}>
+          <button type="submit" className={ProfileCss.ActionButton}>
+            {editingId ? "Update Staff" : "Submit"}
+          </button>
           {editingId && (
             <button
               type="button"
               onClick={handleCancel}
-              style={{ marginLeft: "10px" }}
+              className={ProfileCss.CancelButton}
             >
               Cancel
             </button>
@@ -416,7 +418,9 @@ function StaffDatabase() {
               {Array.isArray(staff.tags) ? staff.tags.join(", ") : staff.tags}
             </p>
 
-            <button onClick={() => handleEdit(staff)}>Edit</button>
+            <button onClick={() => handleEdit(staff)} style={{ color: "blue" }}>
+              Edit
+            </button>
             <button
               onClick={() => handleDelete(staff.id)}
               style={{ marginLeft: "10px", color: "red" }}

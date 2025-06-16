@@ -3,11 +3,15 @@ const cors = require("cors");
 const mysql = require("mysql");
 const multer = require("multer");
 const path = require("path");
+// const router = express.Router();
+
+// const attendance = require("./routes/attendance");
 
 const app = express();
 // app.use(cors());
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000" }));
+// app.use("/api/attendance", attendanceRouter);
 // app.use(cors({ origin: "http://localhost:3000" }));  // allow frontend
 // app.use(express.json());  // parse JSON body
 
@@ -676,6 +680,158 @@ app.get("/api/payrollfunction", (req, res) => {
     res.json(results);
   });
 });
+
+// Route to get attendance by department
+// app.get("/api/attendance", (req, res) => {
+//   const department = req.query.department;
+
+//   if (department) {
+//     const sql = "SELECT * FROM tbl_attendance WHERE department = ?";
+//     pool.query(sql, [department], (err, results) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ error: "Database query failed" });
+//       }
+//       res.json(results);
+//     });
+//   } else {
+//     const sql =
+//       "SELECT department, COUNT(id) AS total_staff FROM tbl_attendance GROUP BY department";
+//     pool.query(sql, (err, results) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ error: "Database query failed" });
+//       }
+//       res.json(results);
+//     });
+//   }
+// });
+
+// Add Staff Table
+// POST - Create staff
+app.post("/staffdepartment", (req, res) => {
+  const { staffCode, fullName, gender, position, department } = req.body;
+
+  const sql = `
+    INSERT INTO tbl_staff (staffCode, fullName, gender, position, department)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  pool.query(
+    sql,
+    [staffCode, fullName, gender, position, department],
+    (err, results) => {
+      if (err) {
+        console.error("Insert error:", err.message);
+        return res.status(500).json({ error: "Database insert failed" });
+      }
+      res
+        .status(200)
+        .json({ message: "Insert successful", id: results.insertId });
+    }
+  );
+});
+
+// GET - Read all staff
+app.get("/staffdepartment", (req, res) => {
+  const sql = "SELECT * FROM tbl_staff";
+  pool.query(sql, (err, results) => {
+    if (err) {
+      console.error("Fetch error:", err.message);
+      return res.status(500).json({ error: "Database fetch failed" });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// PUT - Update staff by ID
+app.put("/staffdepartment/:id", (req, res) => {
+  const { id } = req.params;
+  const { staffCode, fullName, gender, position, department } = req.body;
+
+  const sql = `
+    UPDATE tbl_staff
+    SET staffCode = ?, fullName = ?, gender = ?, position = ?, department = ?
+    WHERE id = ?
+  `;
+
+  pool.query(
+    sql,
+    [staffCode, fullName, gender, position, department, id],
+    (err) => {
+      if (err) {
+        console.error("Update error:", err.message);
+        return res.status(500).json({ error: "Update failed" });
+      }
+      res.status(200).json({ message: "Update successful" });
+    }
+  );
+});
+
+// DELETE - Delete staff by ID
+app.delete("/staffdepartment/:id", (req, res) => {
+  const { id } = req.params;
+  const sql = "DELETE FROM tbl_staff WHERE id = ?";
+
+  pool.query(sql, [id], (err) => {
+    if (err) {
+      console.error("Delete error:", err.message);
+      return res.status(500).json({ error: "Delete failed" });
+    }
+    res.status(200).json({ message: "Deleted successfully" });
+  });
+});
+
+// Add Staff Name and Departmetn at Staff Table
+app.get("/api/staffdepartment", (req, res) => {
+  const sql = `
+    SELECT department, COUNT(staffCode) AS total_staff
+    FROM tbl_staff
+    GROUP BY department;
+  `;
+
+  pool.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        error: "Database error",
+        details: err,
+      });
+    }
+    res.json(result);
+  });
+});
+
+// Dashboard staff count by department
+app.get("/api/department-count", (req, res) => {
+  const sql = `
+    SELECT department, COUNT(staffCode) AS total_staff
+    FROM tbl_staff
+    GROUP BY department;
+  `;
+
+  pool.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        error: "Database error",
+        details: err,
+      });
+    }
+    res.json(result);
+  });
+});
+
+// app.get("/api/attendance", (req, res) => {
+//   pool.query(
+//     "SELECT department, COUNT(id) AS total_staff FROM tbl_attendance GROUP BY department",
+//     (err, results) => {
+//       if (err) {
+//         console.error("Select error:", err);
+//         return res.status(500).send("Error fetching payrolls");
+//       }
+//       res.json(results);
+//     }
+//   );
+// });
 
 //  Start Server
 const PORT = 8000;

@@ -4,6 +4,7 @@ import ProfileCss from "../css/staff.module.css";
 
 function Home() {
   const navigate = useNavigate();
+  const someCondition = true;
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("username");
@@ -44,7 +45,13 @@ function Home() {
       <div className={ProfileCss.navBtl}>
         <button
           className={ProfileCss.addButton}
-          onClick={() => navigate("/attendance")}
+          onClick={() => {
+            if (someCondition) {
+              navigate("/attendance");
+            } else {
+              navigate("/Dashboard");
+            }
+          }}
         >
           Staff Attendance/Timesheet
         </button>
@@ -65,7 +72,7 @@ function Home() {
           className={ProfileCss.addButton}
           onClick={() => navigate("/add-staff")}
         >
-          + Add New Staff Name
+          + Add Staff Table
         </button>
 
         <button

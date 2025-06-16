@@ -217,16 +217,18 @@ function Attendance() {
         overflow: "linebreak",
         columnWidth: "wrap", // Required when using columnStyles
       },
+
       columnStyles: {
-        // Apply fixed width for the first column (number column)
-        0: { cellWidth: 10 },
+        0: { cellWidth: 15 }, // Serial number column
+
         ...Object.keys(initialForm).reduce((acc, key, i) => {
           acc[i + 1] = {
-            cellWidth: key === "name" || key === "department" ? 25 : 18,
+            cellWidth: ["name", "department", "number"].includes(key) ? 30 : 18,
           };
           return acc;
         }, {}),
       },
+
       alternateRowStyles: {
         fillColor: [245, 245, 245],
       },
@@ -460,7 +462,7 @@ function Attendance() {
         </button>
       </form>
       {/* Staff Attendance Record display */}
-      <h3 style={{ textAlign: "center" }}>Staff Attendance Records List</h3>
+      <h3 style={{ textAlign: "center" }}>Staff Timesheet Records List</h3>
       <div className={ProfileCss.AttendanceContainer}>
         <input
           type="text"
@@ -562,7 +564,7 @@ function Attendance() {
 
             <tfoot>
               <tr>
-                <td colSpan="10">
+                <td colSpan={19} style={{ textAlign: "center" }}>
                   <button
                     onClick={downloadPDF}
                     className={ProfileCss.downloadPDF}

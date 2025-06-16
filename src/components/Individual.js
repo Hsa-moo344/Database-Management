@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ProfileCss from "../css/staff.module.css";
 import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 function Individual() {
   const initialForm = {
@@ -8,7 +10,7 @@ function Individual() {
     gender: "",
     position: "",
     department: "",
-    email: "",
+    // email: "",
     type: "",
     date: "",
     timeIn: "",
@@ -24,6 +26,9 @@ function Individual() {
   const [formData, setFormData] = useState(initialForm);
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const getLastDayOfMonth = (date) => {
     const d = new Date(date);
@@ -39,13 +44,8 @@ function Individual() {
       updatedFormData.timeIn &&
       updatedFormData.timeOut
     ) {
-      const [startHour, startMinute] = updatedFormData.timeIn.split("T")[0];
-      const [endHour, endMinute] = updatedFormData.timeOut.split("T")[0];
-
-      const start = new Date();
-      const end = new Date();
-      start.setHours(startHour, startMinute, 0);
-      end.setHours(endHour, endMinute, 0);
+      const start = new Date(`1970-01-01T${updatedFormData.timeIn}`);
+      const end = new Date(`1970-01-01T${updatedFormData.timeOut}`);
 
       let diff = end - start;
       if (diff < 0) {
@@ -55,7 +55,6 @@ function Individual() {
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
       updatedFormData.workingHours = `${hours
         .toString()
         .padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
@@ -88,10 +87,10 @@ function Individual() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       if (response.ok) {
         alert("Data submitted successfully!");
         setFormData(initialForm);
+        fetchData();
       } else {
         const errorText = await response.text();
         alert("Failed to submit: " + errorText);
@@ -116,12 +115,8 @@ function Individual() {
     }
   };
 
-  const UpdateFunction = () => {
-    if (!editId) {
-      alert("No item selected for update");
-      return;
-    }
-
+  const UpdatedFunction = () => {
+    if (!editId) return alert("No item selected for update");
     axios
       .put(`http://localhost:8000/individualfunction/${editId}`, formData)
       .then(() => {
@@ -154,6 +149,88 @@ function Individual() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const filteredData = data.filter((item) =>
+    ["name", "department", "position"].some((key) =>
+      item[key]?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const displayedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const downloadPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(18);
+    doc.setTextColor(40);
+    doc.text("Mae Tao Clinic - Staff Individual Report", 14, 15);
+
+    const tableColumn = ["Number", ...Object.keys(initialForm)];
+
+    filteredData.forEach((row, rowIndex) => {
+      if (rowIndex % itemsPerPage === 0 && rowIndex !== 0) doc.addPage();
+      const pageData = filteredData.slice(rowIndex, rowIndex + itemsPerPage);
+
+      const tableRows = pageData.map((row, index) => [
+        rowIndex + index + 1,
+        ...Object.keys(initialForm).map((key) => {
+          const value = row[key] || "";
+          if (typeof value === "string" && value.includes("T"))
+            return value.split("T")[0];
+          return value;
+        }),
+      ]);
+
+      autoTable(doc, {
+        startY: 25,
+        head: [tableColumn],
+        body: tableRows,
+        theme: "grid",
+        headStyles: {
+          fillColor: [128, 128, 128],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0],
+          lineColor: [200, 200, 200],
+          lineWidth: 0.5,
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 2,
+          overflow: "linebreak",
+          columnWidth: "wrap",
+        },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          ...Object.keys(initialForm).reduce((acc, key, i) => {
+            acc[i + 1] = {
+              cellWidth: key === "activities" ? 25 : 18,
+            };
+            return acc;
+          }, {}),
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didDrawPage: function () {
+          const pageCount = doc.internal.getNumberOfPages();
+          doc.setFontSize(10);
+          doc.text(
+            `Page ${
+              doc.internal.getCurrentPageInfo().pageNumber
+            } of ${pageCount}`,
+            doc.internal.pageSize.getWidth() - 40,
+            doc.internal.pageSize.getHeight() - 10
+          );
+        },
+      });
+    });
+
+    doc.save("Individual_Report.pdf");
+  };
 
   return (
     <div className={ProfileCss.MainAttendance}>
@@ -377,64 +454,95 @@ function Individual() {
         <button type="submit" className={ProfileCss.submitBtn}>
           Submit
         </button>
+        <button
+          type="button"
+          className={ProfileCss.submitBtn}
+          onClick={UpdatedFunction}
+        >
+          Update
+        </button>
       </form>
       <h3>Individual Staff Records List</h3>
-      {data.map((individual) => (
-        <div key={individual.id} className={ProfileCss.CardIndividual}>
+      <div className={ProfileCss.IndividualTable}>
+        <table className={ProfileCss.IndividualTbl}>
           <thead>
             <tr>
-              <th>Name:</th>
-              <th>Gender:</th>
-              <th>Position:</th>
-              <th>Type:</th>
-              <th>Date:</th>
-              <th>Time In:</th>
-              <th>Time Out:</th>
-              <th>Working Hours:</th>
-            </tr>
-            <tr>
-              <td>
-                <p> {individual.name}</p>
-              </td>
-              <td>
-                <p> {individual.gender}</p>
-              </td>
-              <td>
-                <p> {individual.position}</p>
-              </td>
-
-              <td>
-                <p> {individual.type}</p>
-              </td>
-              <td>
-                <p> {individual.date.slice(0, 10)}</p>
-              </td>
-              <td>
-                <p> {individual.timeIn}</p>
-              </td>
-              <td>
-                <p> {individual.timeOut}</p>
-              </td>
-              <td>
-                <p> {individual.workingHours}</p>
-              </td>
+              <th>Name</th>
+              <th>Gender</th>
+              <th>Position</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Working Hours</th>
+              <th>Leave</th>
+              <th>Activities</th>
+              <th>Approved By</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
-          <button
-            className={ProfileCss.editIndividual}
-            onClick={() => editFunction(individual.id)}
-          >
-            Edit
-          </button>
-          <button
-            className={ProfileCss.deleteIndividual}
-            onClick={() => deleteFunction(individual.id)}
-          >
-            Delete
-          </button>
+          <tbody>
+            {data.map((individual) => (
+              <tr key={individual.id}>
+                <td>{individual.name}</td>
+                <td>{individual.gender}</td>
+                <td>{individual.position}</td>
+                <td>{individual.type}</td>
+                <td>{individual.date.slice(0, 10)}</td>
+                <td>{individual.timeIn}</td>
+                <td>{individual.timeOut}</td>
+                <td>{individual.workingHours}</td>
+                <td>{individual.totalLeaveDaysThisMonth}</td>
+                <td>{individual.activities}</td>
+                <td>{individual.approvedBy}</td>
+                <td>
+                  <button
+                    className={ProfileCss.editIndividual}
+                    onClick={() => editFunction(individual.id)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className={ProfileCss.deleteIndividual}
+                    onClick={() => deleteFunction(individual.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <td colSpan="9" style={{ textAlign: "center" }}>
+                <button
+                  onClick={downloadPDF}
+                  className={ProfileCss.downloadPDF}
+                >
+                  Download PDF
+                </button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {totalPages > 1 && (
+        <div className={ProfileCss.Attendancepagination}>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`${ProfileCss.pageBtn} ${
+                currentPage === index + 1 ? ProfileCss.activePage : ""
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

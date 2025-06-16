@@ -20,6 +20,8 @@ import Individual from "./components/Individual";
 import ProfileDetail from "./components/ProfileDetail";
 import Payroll from "./components/Payroll";
 import { useState } from "react";
+import TotalStaff from "./components/TotalStaff";
+import Security from "./components/Security";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,6 +61,8 @@ function App() {
         <Route path="/staffdatabase" element={<Staffdatabase />} />
         <Route path="/individual" element={<Individual />} />
         <Route path="/profiledetail" element={<ProfileDetail />} />
+        <Route path="/totalstaff" element={<TotalStaff />} />
+        <Route path="/security" element={<Security />} />
       </Routes>
     </>
   );
