@@ -1,181 +1,201 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ProfileCss from "../css/staff.module.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-const Dashboard = () => {
-  const [departments, setDepartments] = useState([]);
-  const [openGroup, setOpenGroup] = useState(null);
-  const [staffGroup, setStaffGroup] = useState(null);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+const MyBarChart = () => {
+  const [chartData, setChartData] = useState([]);
+  const [chartBand, setChartBand] = useState([]);
+  const [chartLeave, setChartLeave] = useState([]);
+  const [ChartLeavename, setChartLeavename] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
 
-  const toggleGroup = (groupName) => {
-    setOpenGroup(openGroup === groupName ? null : groupName);
-  };
-
-  const handleDepartmentClick = (departmentName) => {
-    setSelectedDepartment(departmentName);
-  };
-
-  const handleStaffClick = (departmentName) => {
-    setSelectedDepartment(departmentName);
-  };
-
-  const departmentGroups = {
-    "Admin Units": [
-      "Finance",
-      "Security/Public Relation/Kitchen",
-      "Administration",
-      "HR",
-      "OD",
-      "Organizational Development",
-      "Health Adminstration Office",
-      "HIS/Registration",
-      "BBHS",
-      "Training",
-      "CDC",
-    ],
-    "OPD Units": [
-      "Adult OPD",
-      "Child OPD/Immunization",
-      "RH OPD",
-      "Eye",
-      "Dental",
-      "VCT/Blood Bank",
-      "Pharmacy OPD/Main Cental",
-      "Physio/TCM",
-      "IPU",
-    ],
-    "IPD Units": [
-      "RH IPD",
-      "Child IPD",
-      "Adult IPD",
-      "Surgical IPD",
-      "Lab",
-      "Nursing Aid",
-      "ECU",
-    ],
-  };
-  const stafftimesheet = {
-    "Operation Units": [
-      "Human Resource Profile",
-      "Staff Timesheet",
-      "Individual Timesheet",
-      "Staff Payroll",
-      "Staff Profile Detail",
-    ],
-  };
-
+  // Department chart data
   useEffect(() => {
     axios
       .get("http://localhost:8000/api/department-count")
-      .then((res) => setDepartments(res.data))
-      .catch((err) => console.error("Failed to fetch department counts", err));
+      .then((response) => {
+        const formatted = response.data.map((item) => ({
+          department: item.department,
+          total: item.total_staff,
+        }));
+        setChartData(formatted);
+      })
+      .catch((error) => console.error("Department fetch error:", error));
   }, []);
 
-  const filteredDepartments = selectedDepartment
-    ? departments.filter((d) => d.department === selectedDepartment)
-    : departments;
+  // Banding chart data
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/department-banding")
+      .then((response) => {
+        const formatted = response.data.map((item) => ({
+          banding: item.banding_name || "Unknown",
+          total: item.total_staff,
+        }));
+        setChartBand(formatted);
+      })
+      .catch((error) => console.error("Banding fetch error:", error));
+  }, []);
+
+  // Staff Leave chart data
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/department-leave")
+      .then((response) => {
+        const formatted = response.data.map((item) => ({
+          leave: item.department || "Unknown", // use 'department' instead of 'staff_leave'
+          total: item.totalStaffOnLeave || 0, // match field from backend
+        }));
+        setChartLeave(formatted);
+      })
+      .catch((error) => console.error("Leave fetch error:", error));
+  }, []);
+
+  // Staff Leave by name chart data
+  axios.get("http://localhost:8000/api/department-name").then((response) => {
+    const formatted = response.data.map((item) => ({
+      leavename: item.name || "Unknown",
+      total: item.totalLeaveDaysThisMonth || 0,
+    }));
+    setChartLeavename(formatted);
+  });
+
+  useEffect(() => {
+    const params = {};
+    if (selectedMonth) params.month = selectedMonth;
+    if (selectedYear) params.year = selectedYear;
+
+    axios
+      .get("http://localhost:8000/api/department-leave", { params })
+      .then((response) => {
+        const formatted = response.data.map((item) => ({
+          leave: item.department || "Unknown",
+          total: item.totalStaffOnLeave || 0,
+        }));
+        setChartLeave(formatted);
+      })
+      .catch((error) => console.error("Leave fetch error:", error));
+  }, [selectedMonth, selectedYear]);
 
   return (
-    <div className={ProfileCss.DahsboardBar}>
-      {/* === Slide Navigation === */}
-      <div className={ProfileCss.SubDahsboardBar}>
-        <h3>Departments</h3>
-        {Object.entries(departmentGroups).map(([group, depts]) => (
-          <div key={group}>
-            <div
-              onClick={() => toggleGroup(group)}
-              className={ProfileCss.GrpNav}
+    <div
+      style={{
+        display: "flex",
+        gap: "30px",
+        padding: "20px",
+        flexDirection: "column",
+      }}
+    >
+      {/* Top Row: Department + Banding */}
+      <div style={{ display: "flex", gap: "30px" }}>
+        {/* Department Chart */}
+        <div style={{ flex: 1 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
-              {group}
-            </div>
-            {openGroup === group && (
-              <ul style={{ paddingLeft: "20px", listStyle: "none", margin: 0 }}>
-                {depts.map((dept) => (
-                  <li
-                    key={dept}
-                    className={`${ProfileCss.DeptDash} ${
-                      selectedDepartment === dept ? ProfileCss.ActiveDept : ""
-                    }`}
-                    onClick={() => handleDepartmentClick(dept)}
-                  >
-                    {dept}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-        <div>
-          Staff Profile Display
-          {Object.entries(stafftimesheet).map(([group, depts]) => (
-            <div key={group}>
-              <div
-                onClick={() => toggleGroup(group)}
-                className={ProfileCss.GrpNav}
-              >
-                {group}
-              </div>
-              {openGroup === group && (
-                <ul
-                  style={{ paddingLeft: "20px", listStyle: "none", margin: 0 }}
-                >
-                  {depts.map((dept) => (
-                    <li
-                      key={dept}
-                      className={`${ProfileCss.DeptDash} ${
-                        selectedDepartment === dept ? ProfileCss.ActiveDept : ""
-                      }`}
-                      onClick={() => handleDepartmentClick(dept)}
-                    >
-                      {dept}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="department" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="total" fill="#8884d8" name="Department" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <button
-          onClick={() => setSelectedDepartment(null)}
-          className={ProfileCss.DashBtn}
-        >
-          Show All
-        </button>
+
+        {/* Banding Chart */}
+        <div style={{ flex: 1 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={chartBand}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="banding" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="total" fill="#82ca9d" name="Banding" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* === Table === */}
-      <div
-        className={ProfileCss.MainAttendance}
-        style={{ flex: 1, padding: "20px" }}
-      >
-        <h2>
-          {selectedDepartment
-            ? `Staff Count for: ${selectedDepartment}`
-            : "Staff Count by Department"}
-        </h2>
+      {/* Bottom Row: Leave Charts */}
+      <div style={{ display: "flex", gap: "30px" }}>
+        {/* Leave by Department */}
+        <div style={{ flex: 1 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={chartLeave}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="leave" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="total" fill="#ffc658" name="Leave by Department" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
-        <table className={ProfileCss.AttendanceTable}>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Department</th>
-              <th>Total Staff</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDepartments.map((item, index) => (
-              <tr key={item.department}>
-                <td>{index + 1}</td>
-                <td>{item.department}</td>
-                <td>{item.total_staff}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Leave by Name */}
+        <div style={{ flex: 1 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={ChartLeavename}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="leavename" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="total" fill="#ff8042" name="Leave by Name" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+        >
+          <option value="">All Months</option>
+          {[...Array(12)].map((_, i) => (
+            <option key={i + 1} value={String(i + 1).padStart(2, "0")}>
+              {new Date(0, i).toLocaleString("default", { month: "long" })}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+        >
+          <option value="">All Years</option>
+          {[2024, 2025].map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default MyBarChart;

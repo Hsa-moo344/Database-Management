@@ -7,8 +7,8 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
-import About from "./components/About";
-import Contact from "./components/Contact";
+import StaffInfo from "./components/StaffInfo";
+import StaffContact from "./components/StaffContact";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Attendance from "./components/Attendance";
@@ -49,8 +49,10 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        {/* Login admin and user */}
+
+        <Route path="/staffinfo" element={<StaffInfo />} />
+        <Route path="/staffcontact" element={<StaffContact />} />
 
         {/* New Routes */}
         <Route path="/attendance" element={<Attendance />} />

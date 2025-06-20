@@ -7,6 +7,7 @@ import autoTable from "jspdf-autotable";
 function Individual() {
   const initialForm = {
     name: "",
+    staffCode: "",
     gender: "",
     position: "",
     department: "",
@@ -29,6 +30,9 @@ function Individual() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const [selectedStartedDate, setSelectedStartedDate] = useState(""); // Start date
+  const [selectedEndDate, setSelectedEndDate] = useState(""); // End date
 
   const getLastDayOfMonth = (date) => {
     const d = new Date(date);
@@ -115,8 +119,12 @@ function Individual() {
     }
   };
 
+  // Called when Update button clicked
   const UpdatedFunction = () => {
-    if (!editId) return alert("No item selected for update");
+    if (!editId) {
+      alert("No item selected for update");
+      return;
+    }
     axios
       .put(`http://localhost:8000/individualfunction/${editId}`, formData)
       .then(() => {
@@ -150,11 +158,19 @@ function Individual() {
     fetchData();
   }, []);
 
-  const filteredData = data.filter((item) =>
-    ["name", "department", "position"].some((key) =>
-      item[key]?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredData = data.filter((item) => {
+    const name = item.name?.toLowerCase() || "";
+    const date = item.date?.slice(0, 10) || ""; // Ensure date format is YYYY-MM-DD
+    const search = searchTerm.trim().toLowerCase();
+
+    const matchesName = search === "" || name.includes(search);
+
+    const matchesDate =
+      (!selectedStartedDate || date >= selectedStartedDate) &&
+      (!selectedEndDate || date <= selectedEndDate);
+
+    return matchesName && matchesDate;
+  });
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const displayedData = filteredData.slice(
@@ -170,63 +186,59 @@ function Individual() {
 
     const tableColumn = ["Number", ...Object.keys(initialForm)];
 
-    filteredData.forEach((row, rowIndex) => {
-      if (rowIndex % itemsPerPage === 0 && rowIndex !== 0) doc.addPage();
-      const pageData = filteredData.slice(rowIndex, rowIndex + itemsPerPage);
+    const tableRows = filteredData.map((row, index) => [
+      index + 1,
+      ...Object.keys(initialForm).map((key) => {
+        const value = row[key] || "";
+        if (typeof value === "string" && value.includes("T")) {
+          return value.split("T")[0];
+        }
+        return value;
+      }),
+    ]);
 
-      const tableRows = pageData.map((row, index) => [
-        rowIndex + index + 1,
-        ...Object.keys(initialForm).map((key) => {
-          const value = row[key] || "";
-          if (typeof value === "string" && value.includes("T"))
-            return value.split("T")[0];
-          return value;
-        }),
-      ]);
-
-      autoTable(doc, {
-        startY: 25,
-        head: [tableColumn],
-        body: tableRows,
-        theme: "grid",
-        headStyles: {
-          fillColor: [128, 128, 128],
-          textColor: [255, 255, 255],
-          fontStyle: "bold",
-        },
-        bodyStyles: {
-          textColor: [0, 0, 0],
-          lineColor: [200, 200, 200],
-          lineWidth: 0.5,
-        },
-        styles: {
-          fontSize: 9,
-          cellPadding: 2,
-          overflow: "linebreak",
-          columnWidth: "wrap",
-        },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          ...Object.keys(initialForm).reduce((acc, key, i) => {
-            acc[i + 1] = {
-              cellWidth: key === "activities" ? 25 : 18,
-            };
-            return acc;
-          }, {}),
-        },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        didDrawPage: function () {
-          const pageCount = doc.internal.getNumberOfPages();
-          doc.setFontSize(10);
-          doc.text(
-            `Page ${
-              doc.internal.getCurrentPageInfo().pageNumber
-            } of ${pageCount}`,
-            doc.internal.pageSize.getWidth() - 40,
-            doc.internal.pageSize.getHeight() - 10
-          );
-        },
-      });
+    autoTable(doc, {
+      startY: 25,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: {
+        fillColor: [128, 128, 128],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.3,
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 2,
+        overflow: "linebreak",
+        columnWidth: "wrap",
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        ...Object.keys(initialForm).reduce((acc, key, i) => {
+          acc[i + 1] = {
+            cellWidth: key === "activities" ? 25 : 18,
+          };
+          return acc;
+        }, {}),
+      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      didDrawPage: function () {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(
+          `Page ${
+            doc.internal.getCurrentPageInfo().pageNumber
+          } of ${pageCount}`,
+          doc.internal.pageSize.getWidth() - 40,
+          doc.internal.pageSize.getHeight() - 10
+        );
+      },
     });
 
     doc.save("Individual_Report.pdf");
@@ -242,6 +254,16 @@ function Individual() {
             type="text"
             name="name"
             value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label>
+          Staff Code:
+          <input
+            type="text"
+            name="staffCode"
+            value={formData.staffCode}
             onChange={handleChange}
             required
           />
@@ -434,6 +456,7 @@ function Individual() {
           Activities:
           <textarea
             name="activities"
+            value={formData.activities}
             onChange={handleChange}
             rows="5"
             cols="40"
@@ -462,12 +485,39 @@ function Individual() {
           Update
         </button>
       </form>
-      <h3>Individual Staff Records List</h3>
+
+      <h3 style={{ textAlign: "center" }}>Individual Staff Records List</h3>
       <div className={ProfileCss.IndividualTable}>
+        <div className={ProfileCss.FilterContainer}>
+          <div className={ProfileCss.FilterContainer}>
+            <input
+              type="text"
+              placeholder="Search by name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={ProfileCss.TbnRecord}
+            />
+
+            <input
+              type="date"
+              value={selectedStartedDate}
+              onChange={(e) => setSelectedStartedDate(e.target.value)}
+              className={ProfileCss.TbnRecord}
+            />
+
+            <input
+              type="date"
+              value={selectedEndDate}
+              onChange={(e) => setSelectedEndDate(e.target.value)}
+              className={ProfileCss.TbnRecord}
+            />
+          </div>
+        </div>
         <table className={ProfileCss.IndividualTbl}>
           <thead>
             <tr>
               <th>Name</th>
+              <th>Staff Code</th>
               <th>Gender</th>
               <th>Position</th>
               <th>Type</th>
@@ -481,52 +531,55 @@ function Individual() {
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {data.map((individual) => (
-              <tr key={individual.id}>
-                <td>{individual.name}</td>
-                <td>{individual.gender}</td>
-                <td>{individual.position}</td>
-                <td>{individual.type}</td>
-                <td>{individual.date.slice(0, 10)}</td>
-                <td>{individual.timeIn}</td>
-                <td>{individual.timeOut}</td>
-                <td>{individual.workingHours}</td>
-                <td>{individual.totalLeaveDaysThisMonth}</td>
-                <td>{individual.activities}</td>
-                <td>{individual.approvedBy}</td>
-                <td>
-                  <button
-                    className={ProfileCss.editIndividual}
-                    onClick={() => editFunction(individual.id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className={ProfileCss.deleteIndividual}
-                    onClick={() => deleteFunction(individual.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
+            {filteredData.length === 0 ? (
+              <tr>
+                <td colSpan="12">No matching records found.</td>
               </tr>
-            ))}
+            ) : (
+              filteredData.map((individual) => (
+                <tr key={individual.id}>
+                  <td style={{ minWidth: "100px" }}>{individual.name}</td>
+                  <td>{individual.staffCode}</td>
+                  <td>{individual.gender}</td>
+                  <td>{individual.position}</td>
+                  <td>{individual.type}</td>
+                  <td>{individual.date?.slice(0, 10)}</td>
+                  <td>{individual.timeIn}</td>
+                  <td>{individual.timeOut}</td>
+                  <td>{individual.workingHours}</td>
+                  <td>{individual.totalLeaveDaysThisMonth}</td>
+                  <td>{individual.activities}</td>
+                  <td>{individual.approvedBy}</td>
+                  <td>
+                    <button
+                      className={ProfileCss.editIndividual}
+                      onClick={() => editFunction(individual.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={ProfileCss.deleteIndividual}
+                      onClick={() => deleteFunction(individual.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
-
-          <tfoot>
-            <tr>
-              <td colSpan="9" style={{ textAlign: "center" }}>
-                <button
-                  onClick={downloadPDF}
-                  className={ProfileCss.downloadPDF}
-                >
-                  Download PDF
-                </button>
-              </td>
-            </tr>
-          </tfoot>
         </table>
+
+        <tfoot>
+          <tr>
+            <td colSpan="9" style={{ textAlign: "center" }}>
+              <button onClick={downloadPDF} className={ProfileCss.downloadPDF}>
+                Download PDF
+              </button>
+            </td>
+          </tr>
+        </tfoot>
       </div>
       {totalPages > 1 && (
         <div className={ProfileCss.Attendancepagination}>

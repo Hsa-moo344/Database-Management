@@ -3,6 +3,7 @@ const cors = require("cors");
 const mysql = require("mysql");
 const multer = require("multer");
 const path = require("path");
+
 // const router = express.Router();
 
 // const attendance = require("./routes/attendance");
@@ -63,6 +64,87 @@ function formatDate(input) {
   return date.toISOString().slice(0, 10);
 }
 
+// Fundraising
+// GET all items
+app.get("/api/fundraisingfunction", (req, res) => {
+  pool.query(
+    "SELECT * FROM fundraising ORDER BY created_at DESC",
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json(result);
+    }
+  );
+});
+
+// ✅ POST a new item
+app.post("/api/fundraisingfunction", upload.single("image"), (req, res) => {
+  const { itemId, ItemName, ItemDescription, ItemIn, ItemOut, Balance } =
+    req.body;
+  const image = req.file ? "/uploads/" + req.file.filename : "";
+
+  const sql = `INSERT INTO fundraising (itemId, ItemName, ItemDescription, image, ItemIn, ItemOut, Balance) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const values = [
+    itemId,
+    ItemName,
+    ItemDescription,
+    image,
+    ItemIn,
+    ItemOut,
+    Balance,
+  ];
+
+  pool.query(sql, values, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Item created", id: result.insertId });
+  });
+});
+
+// ✅ PUT (update) an item
+app.put("/api/fundraisingfunction/:id", upload.single("image"), (req, res) => {
+  const { itemId, ItemName, ItemDescription, ItemIn, ItemOut, Balance } =
+    req.body;
+  const image = req.file ? "/uploads/" + req.file.filename : null;
+
+  let sql = `UPDATE fundraising SET itemId=?, ItemName=?, ItemDescription=?, ItemIn=?, ItemOut=?, Balance=?`;
+  const params = [itemId, ItemName, ItemDescription, ItemIn, ItemOut, Balance];
+
+  if (image) {
+    sql += `, image=?`;
+    params.push(image);
+  }
+
+  sql += ` WHERE id=?`;
+  params.push(req.params.id);
+
+  pool.query(sql, params, (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Item updated" });
+  });
+});
+
+// ✅ DELETE an item
+app.delete("/api/fundraisingfunction/:id", (req, res) => {
+  pool.query("DELETE FROM fundraising WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Item deleted" });
+  });
+});
+
+// Login user
+// app.post("/login", (req, res) => {
+//   const { email, password } = req.body;
+//   const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+
+//   pool.query(sql, [email, password], (err, results) => {
+//     if (err) return res.status(500).json({ error: "Database error" });
+//     if (results.length === 0)
+//       return res.status(401).json({ error: "Invalid credentials" });
+
+//     const user = results[0];
+//     res.status(200).json({ email: user.email, role: user.role });
+//   });
+// });
+
 //  Attendance form insert
 app.post("/attendancefunction", (req, res) => {
   const {
@@ -88,7 +170,7 @@ app.post("/attendancefunction", (req, res) => {
       name, staffCode, gender, position, department, email, type, date,
       timeIn, timeOut, workingHours,
       startLeaveDay, endLeaveDay, totalLeaveDaysThisMonth, approvedBy
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   pool.query(
@@ -241,6 +323,7 @@ app.get("/api/attendancefunction", (req, res) => {
 app.post("/individualfunction", (req, res) => {
   const {
     name,
+    staffCode,
     gender,
     position,
     department,
@@ -259,16 +342,17 @@ app.post("/individualfunction", (req, res) => {
 
   const sql = `
     INSERT INTO tbl_individual (
-      name, gender, position, department, email, type, date,
+      name, staffCode, gender, position, department, email, type, date,
       timeIn, timeOut, workingHours,
       startLeaveDay, endLeaveDay, totalLeaveDaysThisMonth, activities, approvedBy
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   pool.query(
     sql,
     [
       name,
+      staffCode,
       gender,
       position,
       department,
@@ -299,58 +383,67 @@ app.post("/individualfunction", (req, res) => {
 // PUT - Update individual
 app.put("/individualfunction/:id", (req, res) => {
   const id = req.params.id;
-  const {
+  let {
     name,
+    staffCode,
     gender,
     position,
-    department,
-    email,
     type,
     date,
     timeIn,
     timeOut,
     workingHours,
-    startLeaveDay,
-    endLeaveDay,
     totalLeaveDaysThisMonth,
+    activities,
     approvedBy,
   } = req.body;
 
+  // ✅ Format the date string to only include YYYY-MM-DD
+  if (date) {
+    date = new Date(date).toISOString().split("T")[0]; // "2025-06-16"
+  }
+
   const sql = `
     UPDATE tbl_individual SET
-      name=?, gender=?, position=?, department=?, email=?, type=?, date=?,
-      timeIn=?, timeOut=?, workingHours=?, startLeaveDay=?, endLeaveDay=?,
-      totalLeaveDaysThisMonth=?, approvedBy=?
-    WHERE id=?
+      name = ?,
+      staffCode = ?,
+      gender = ?,
+      position = ?,
+      type = ?,
+      date = ?,
+      timeIn = ?,
+      timeOut = ?,
+      workingHours = ?,
+      totalLeaveDaysThisMonth = ?,
+      activities = ?,
+      approvedBy = ?
+    WHERE id = ?
   `;
 
-  pool.query(
-    sql,
-    [
-      name,
-      gender,
-      position,
-      department,
-      email,
-      type,
-      formatDate(date),
-      timeIn,
-      timeOut,
-      workingHours,
-      formatDate(startLeaveDay),
-      formatDate(endLeaveDay),
-      totalLeaveDaysThisMonth,
-      approvedBy,
-      id,
-    ],
-    (err) => {
-      if (err) {
-        console.error("Update error:", err.message);
-        return res.status(500).json({ error: "Update failed" });
-      }
-      res.status(200).json({ message: "Attendance updated successfully" });
+  const values = [
+    name,
+    staffCode,
+    gender,
+    position,
+    type,
+    date,
+    timeIn,
+    timeOut,
+    workingHours,
+    totalLeaveDaysThisMonth || null,
+    activities,
+    approvedBy,
+    id,
+  ];
+
+  pool.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("SQL update error:", err);
+      res.status(500).send("Failed to update");
+    } else {
+      res.send("Updated individual timesheet successfully");
     }
-  );
+  });
 });
 
 // DELETE - individual
@@ -825,6 +918,106 @@ app.get("/api/department-count", (req, res) => {
   });
 });
 
+// Staff Inforamtion page count by payroll
+app.get("/api/payroll-data", (req, res) => {
+  const sql = `
+    SELECT *
+        FROM tbl_staff s
+        RIGHT JOIN tbl_payroll p ON s.staffCode = p.staffCode;
+  `;
+  pool.query(sql, (err, result) => {
+    if (err) {
+      console.error("Database error: ", err);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+    res.json(result);
+  });
+});
+
+// Dashboard from tbl_staff table
+// API endpoint to get all staff
+app.get("/api/department-count", (req, res) => {
+  const sql = `
+  SELECT IFNULL(department, 'Unknown') AS department, COUNT(staffCode) AS total_staff
+  FROM tbl_staff
+  GROUP BY department
+`;
+  pool.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching staff:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+// Department banding
+app.get("/api/department-banding", (req, res) => {
+  const sql = `
+  SELECT 
+  IFNULL(banding, 'Unknown') AS banding_name,
+  COUNT(staffCode) AS total_staff
+FROM tbl_payroll
+GROUP BY banding_name
+ORDER BY
+  CASE WHEN banding_name = 'Unknown' THEN 1 ELSE 0 END,
+  CAST(SUBSTRING(banding_name, 6) AS UNSIGNED);
+  `;
+
+  pool.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching staff:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+// Leave by departments
+app.get("/api/department-leave", (req, res) => {
+  const sql = `
+  SELECT 
+      department,
+      COUNT(DISTINCT staffCode) AS totalStaffOnLeave,
+      SUM(totalLeaveDaysThisMonth) AS totalLeaveDays
+      FROM tbl_attendance
+      WHERE totalLeaveDaysThisMonth IS NOT NULL
+      GROUP BY department
+      ORDER BY department ASC;
+  `;
+
+  pool.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching staff:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+// Leave by name
+app.get("/api/department-name", (req, res) => {
+  const sql = `
+  SELECT
+  department,
+  name,
+  staffCode,
+  startLeaveDay,
+  endLeaveDay,
+  totalLeaveDaysThisMonth
+FROM tbl_attendance
+WHERE startLeaveDay IS NOT NULL
+  AND endLeaveDay IS NOT NULL;
+  `;
+
+  pool.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching staff:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
 // app.get("/api/attendance", (req, res) => {
 //   pool.query(
 //     "SELECT department, COUNT(id) AS total_staff FROM tbl_attendance GROUP BY department",
@@ -839,33 +1032,33 @@ app.get("/api/department-count", (req, res) => {
 // });
 
 // Exmaple of About
-app.get("/api/about", async (req, res) => {
-  const { month = "", department = "" } = req.query;
+// app.get("/api/about", async (req, res) => {
+//   const { month = "", department = "" } = req.query;
 
-  const query = `
-    SELECT 
-  s.staffCode,
-  s.fullName,
-  p.banding,
-  s.gender,
-  s.position,
-  s.department
-FROM tbl_staff s
-LEFT JOIN tbl_payroll p ON s.staffCode = p.staffCode
-LEFT JOIN tbl_attendance a ON s.staffCode = a.staffCode
-GROUP BY s.staffCode;
-  `;
+//   const query = `
+//     SELECT
+//   s.staffCode,
+//   s.fullName,
+//   p.banding,
+//   s.gender,
+//   s.position,
+//   s.department
+// FROM tbl_staff s
+// LEFT JOIN tbl_payroll p ON s.staffCode = p.staffCode
+// LEFT JOIN tbl_attendance a ON s.staffCode = a.staffCode
+// GROUP BY s.staffCode;
+//   `;
 
-  pool.query(query, (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        error: "Database error",
-        details: err,
-      });
-    }
-    res.json(result);
-  });
-});
+//   pool.query(query, (err, result) => {
+//     if (err) {
+//       return res.status(500).json({
+//         error: "Database error",
+//         details: err,
+//       });
+//     }
+//     res.json(result);
+//   });
+// });
 
 //  Start Server
 const PORT = 8000;

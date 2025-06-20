@@ -11,12 +11,16 @@ function Navbar() {
         Home
       </a>
 
-      <a href="/about" className={ProfileCss.navItems}>
-        About
+      <a href="/staffinfo" className={ProfileCss.navItems}>
+        Staff Information Detail
       </a>
 
-      <a href="/contact" className={ProfileCss.navItems}>
-        Contact Me
+      <a href="/staffcontact" className={ProfileCss.navItems}>
+        Staff Contact
+      </a>
+
+      <a href="/fundraising" className={ProfileCss.navItems}>
+        Fundraising
       </a>
 
       <a href="/dashboard" className={ProfileCss.navItems}>

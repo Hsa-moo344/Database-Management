@@ -20,6 +20,7 @@ const initialForm = {
   endLeaveDay: "",
   totalLeaveDaysThisMonth: 0,
   approvedBy: "",
+  // id: "",
 };
 
 function Attendance() {
@@ -29,6 +30,10 @@ function Attendance() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedStartedDate, setSelectedStartedDate] = useState("");
+  const [selectedEndDate, setSelectedEndDate] = useState("");
 
   const getLastDayOfMonth = (date) => {
     const d = new Date(date);
@@ -165,12 +170,35 @@ function Attendance() {
     fetchData();
   }, []);
 
-  const filteredData = data.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.position.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = data.filter((item) => {
+    const name = item.name?.toLowerCase() || "";
+    const department = item.department?.toLowerCase() || "";
+    // Convert number to string, no toLowerCase needed
+    const leave =
+      item.totalLeaveDaysThisMonth != null
+        ? item.totalLeaveDaysThisMonth.toString()
+        : "";
+    const position = item.position?.toLowerCase() || "";
+    const date = item.date?.slice(0, 10) || "";
+    const search = searchTerm.toLowerCase();
+    const selectedDept = selectedDepartment?.toLowerCase() || "";
+
+    const matchesSearch =
+      name.includes(search) ||
+      department.includes(search) ||
+      leave.includes(search) || // now safe because leave is string
+      position.includes(search) ||
+      date.includes(search);
+
+    const matchesDepartment =
+      selectedDept === "" || department === selectedDept;
+
+    const matchesDate =
+      (!selectedStartedDate || date >= selectedStartedDate) &&
+      (!selectedEndDate || date <= selectedEndDate);
+
+    return matchesSearch && matchesDepartment && matchesDate;
+  });
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const displayedData = filteredData?.slice(
@@ -478,11 +506,61 @@ function Attendance() {
       <div className={ProfileCss.AttendanceContainer}>
         <input
           type="text"
-          placeholder="Search by name, department or position"
+          placeholder="Search by name, department or position or leave"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={ProfileCss.TbnRecord}
         />
+
+        <div className={ProfileCss.FilterContainer}>
+          <select
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
+            className={ProfileCss.TbnRecord}
+          >
+            <option value="">All Departments</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>Adult OPD</option>
+            <option>Eye</option>
+            <option>Dental</option>
+            <option>Child OPD/Immunization</option>
+            <option>RH OPD</option>
+            <option>Lab</option>
+            <option>RH IPD</option>
+            <option>VCT/Blood Bank</option>
+            <option>Pharmacy OPD/IPD/Main Center</option>
+            <option>RH IPD</option>
+            <option>Child IPD</option>
+            <option>Surgical OPD/IPD</option>
+            <option>Adult IPD</option>
+            <option>Physiotherapy</option>
+            <option>TCM</option>
+            <option>Security/Public Relation</option>
+            <option>Health Administraion Office</option>
+            <option>HIS/Registration</option>
+            <option>HR/OD</option>
+            <option>ECU</option>
+            <option>Administartion</option>
+            <option>Kitchen</option>
+            <option>BBHS</option>
+            <option>Training</option>
+          </select>
+
+          <input
+            type="date"
+            value={selectedStartedDate}
+            onChange={(e) => setSelectedStartedDate(e.target.value)}
+            className={ProfileCss.TbnRecord}
+          />
+
+          <input
+            type="date"
+            value={selectedEndDate}
+            onChange={(e) => setSelectedEndDate(e.target.value)}
+            className={ProfileCss.TbnRecord}
+          />
+        </div>
 
         {displayedData.length > 0 ? (
           <table className={ProfileCss.TblDisplayForm}>

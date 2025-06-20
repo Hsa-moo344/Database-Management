@@ -4,6 +4,10 @@ body {
   padding: 0;
 }
 
+.loginMain {
+  background-color: 1px solid black;
+}
+
 .Main {
   display: flex;
   flex-direction: column;
@@ -215,13 +219,29 @@ body {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
+.FilterContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .TbnRecord {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 8px 12px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 6px;
+  min-width: 180px;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.TbnRecord:focus {
+  border-color: #3b82f6; /* Tailwind blue-500 */
+  outline: none;
 }
 
 .TblDisplayForm {
@@ -317,20 +337,35 @@ body {
 /* Attendance Record dislay list */
 .AttendanceContainer {
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
 }
 
+/* Flex container to align filters in one row */
+.FilterContainer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap; /* keep all filters in one line */
+  align-items: center;
+  margin-top: 12px;
+  overflow-x: auto; /* allows scroll on smaller screens */
+}
+
+/* Style for text input, select, and date inputs */
 .TbnRecord {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 16px;
+  padding: 8px 12px;
+  font-size: 14px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
+  width: 200px;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* Highlight when input is focused */
+.TbnRecord:focus {
+  border-color: #3b82f6;
+  outline: none;
 }
 
 .TblDisplayForm {
@@ -531,7 +566,7 @@ body {
 
 .IndividualTable th,
 .IndividualTable td {
-  padding: 12px 10px;
+  padding: 0px 5px;
   text-align: center;
   border: 1px solid #ddd;
 }
@@ -602,7 +637,10 @@ body {
   justify-content: center;
   gap: 8px;
 }
-
+.IndividualTbl th,
+td {
+  padding: auto;
+}
 .pageBtn {
   padding: 6px 10px;
   font-size: 13px;
@@ -1438,17 +1476,26 @@ h1 {
 }
 
 .SubDahsboardBar {
-  width: 250px;
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-right: 1px solid #ccc;
+  width: 300px;
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #f0f0f0;
+  padding: 15px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+}
+.SubDahsboardBar h3 {
+  background-color: #949499;
+  color: black;
+  padding: 10px;
 }
 
 .GrpNav {
   font-weight: bold;
   cursor: pointer;
   padding: 8px;
-  background-color: #ddd;
+  background-color: #949499;
   margin-bottom: 5px;
   border-radius: 4px;
 }
@@ -1485,8 +1532,8 @@ h1 {
 }
 
 .MainAttendance {
-  flex: 1;
-  padding: 20px;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .AttendanceTable {
@@ -1500,4 +1547,127 @@ h1 {
   border: 1px solid #ccc;
   padding: 8px;
   text-align: left;
+}
+
+/* Fundraising css */
+.MainFundraising {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #f7f9fc;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.FundraisingMain {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.FundraisingMain label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #333;
+}
+
+.FundraisingMain input,
+.FundraisingMain textarea {
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
+}
+
+/* Button styles */
+.ButtonGroup {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.ActionButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.ActionButton:hover {
+  background-color: #0056b3;
+}
+
+.CancelButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.CancelButton:hover {
+  background-color: #c82333;
+}
+
+/* Card list */
+.ItemCard {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 6px;
+  width: 220px;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease;
+}
+
+.ItemCard:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ItemCard img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.ItemCard h4 {
+  margin: 10px 0 5px 0;
+  font-size: 16px;
+}
+
+.ItemCard p {
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+/* Optional utility */
+.SearchInput {
+  margin-top: 20px;
+  padding: 5px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* image zoom */
+.zoomableImage {
+  transition: transform 0.3s ease; /* Smooth zoom */
+  cursor: pointer;
+}
+
+.zoomableImage:hover {
+  transform: scale(2); /* Zoom in 2x */
+  z-index: 10;
+  position: relative;
 }
